@@ -51,7 +51,7 @@ public class PortainerStackApiClient {
 			.path(String.valueOf(updateReqV1.getId()))
 			.queryParam("endpointId", 1)
 			.request(MediaType.APPLICATION_JSON_TYPE)
-			.put(Entity.json(updateReqV1));
+			.put(Entity.json(JsonUtils.writeValueAsString(updateReqV1)));
 		final String body = res.readEntity(String.class);
 		Validate.isTrue(
 			res.getStatusInfo().toEnum() == Response.Status.OK, body

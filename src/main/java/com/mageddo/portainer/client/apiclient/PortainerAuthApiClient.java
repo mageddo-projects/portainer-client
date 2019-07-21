@@ -21,11 +21,11 @@ public class PortainerAuthApiClient {
 		final Response res = webTarget
 			.path("/api/auth")
 			.request(MediaType.APPLICATION_JSON_TYPE)
-			.post(Entity.json(
+			.post(Entity.json(JsonUtils.writeValueAsString(
 				new AuthReqV1()
 				.setUsername(username)
 				.setPassword(password)
-			));
+			)));
 		return JsonUtils
 			.readTree(res.readEntity(InputStream.class))
 			.at("/jwt")
