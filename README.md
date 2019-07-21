@@ -1,12 +1,9 @@
-### Building binary and running
+### Building and installing at the local repo
 
 ```bash
-$ ./gradlew clean nativeImage
+$ ./gradlew install
 ```
 
-### Developing
+#### Using
 
-```bash
-echo $'version: \'3\'\nservices:\n  web:\n    image: nginx' > /tmp/stack.yml &&\
-./gradlew run --debug-jvm --args "stack-deploy -u admin -p 12345678 -s reverse-proxy /tmp/stack.yml"
-```
+	compile group: 'com.mageddo.portainer', name: 'portainer-client', version: '1.0.0'
