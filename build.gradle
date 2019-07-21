@@ -1,0 +1,36 @@
+buildscript {
+	repositories {
+		mavenLocal()
+	}
+}
+plugins {
+	id "java"
+}
+
+repositories {
+	mavenLocal()
+	mavenCentral()
+	maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+}
+
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
+
+dependencies {
+
+	compile group: 'com.mageddo', name: 'commons', version: '1.3.0'
+	compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.9.9'
+	compile group: 'org.jboss.resteasy', name: 'resteasy-client', version: '3.6.2.Final'
+	compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'
+	compile group: 'commons-io', name: 'commons-io', version: '2.6'
+	compile group: 'com.auth0', name: 'java-jwt', version: '3.8.1'
+	compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.26'
+
+	compile('com.mageddo:rsl:1.0.0')
+	annotationProcessor('com.mageddo:rsl-compiler:1.0.1')
+	testAnnotationProcessor('com.mageddo:rsl-compiler:1.0.1')
+
+	testCompile group: 'org.jboss.resteasy', name: 'resteasy-undertow', version: '3.6.2.Final'
+	testCompile "junit:junit:4.12"
+
+}

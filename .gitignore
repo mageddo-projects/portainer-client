@@ -1,0 +1,9 @@
+.idea
+build
+*.iml
+*.log
+*.zip
+.gradle
+out
+micronaut/micronaut
+**/resources/lib/

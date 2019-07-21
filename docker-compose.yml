@@ -1,0 +1,7 @@
+version: '3'
+services:
+  native-image:
+    image: defreitas/micronaut-native-image:latest
+    build:
+      context: .
+      dockerfile: src/main/docker/nativeimage/Dockerfile

@@ -1,0 +1,74 @@
+[
+	{
+		"Id": 1,
+		"Name": "myStack",
+		"Type": 1,
+		"EndpointId": 1,
+		"SwarmId": "jpofkc0i9uo9wtx1zesuk649w",
+		"EntryPoint": "docker-compose.yml",
+		"Env": [
+			{
+				"name": "MYSQL_ROOT_PASSWORD",
+				"value": "password"
+			}
+		],
+		"ProjectPath": "/data/compose/1",
+		"ResourceControl": {
+			"Id": 0,
+			"ResourceId": "",
+			"SubResourceIds": null,
+			"Type": 0,
+			"UserAccesses": null,
+			"TeamAccesses": null,
+			"Public": false
+		}
+	},
+	{
+		"Id": 2,
+		"Name": "web2",
+		"Type": 1,
+		"EndpointId": 1,
+		"SwarmId": "jpofkc0i9uo9wtx1zesuk649w",
+		"EntryPoint": "docker-compose.yml",
+		"Env": [
+			{
+				"name": "MYSQL_ROOT_PASSWORD",
+				"value": "updated password"
+			}
+		],
+		"ProjectPath": "/data/compose/2",
+		"ResourceControl": {
+			"Id": 0,
+			"ResourceId": "",
+			"SubResourceIds": null,
+			"Type": 0,
+			"UserAccesses": null,
+			"TeamAccesses": null,
+			"Public": false
+		}
+	},
+	{
+		"Id": 3,
+		"Name": "web3",
+		"Type": 1,
+		"EndpointId": 1,
+		"SwarmId": "x",
+		"EntryPoint": "docker-compose.yml",
+		"Env": [
+			{
+				"name": "MYSQL_ROOT_PASSWORD",
+				"value": "password"
+			}
+		],
+		"ProjectPath": "/data/compose/3",
+		"ResourceControl": {
+			"Id": 0,
+			"ResourceId": "",
+			"SubResourceIds": null,
+			"Type": 0,
+			"UserAccesses": null,
+			"TeamAccesses": null,
+			"Public": false
+		}
+	}
+]
