@@ -2,70 +2,116 @@ package com.mageddo.portainer.client.apiclient;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.mageddo.common.jackson.JsonUtils;
-import com.mageddo.portainer.client.apiclient.vo.RequestRes;
-import com.mageddo.portainer.client.apiclient.vo.StackCreateReqV1;
-import com.mageddo.portainer.client.apiclient.vo.StackFileGetResV1;
-import com.mageddo.portainer.client.apiclient.vo.StackGetRestV1;
-import com.mageddo.portainer.client.apiclient.vo.StackUpdateReqV1;
+import com.mageddo.portainer.client.apiclient.vo.*;
+import okhttp3.*;
 import org.apache.commons.lang3.Validate;
 
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.List;
 
 public class PortainerStackApiClient {
 
-	private final WebTarget webTarget;
+	private final OkHttpClient okHttpClient;
+	private final HttpUrl baseUrl;
 
-	public PortainerStackApiClient(WebTarget webTarget) {
-		this.webTarget = webTarget;
+	public PortainerStackApiClient(OkHttpClient okHttpClient, HttpUrl baseUrl) {
+		this.okHttpClient = okHttpClient;
+		this.baseUrl = baseUrl;
 	}
 
 	public List<StackGetRestV1> findStacks(){
-		return JsonUtils.readValue(webTarget
-			.path("/api/stacks")
-			.request(MediaType.APPLICATION_JSON_TYPE)
-			.get(String.class), new TypeReference<List<StackGetRestV1>>(){})
-		;
+		try {
+			return JsonUtils.instance().readValue(
+				okHttpClient
+				.newCall(
+					new Request.Builder()
+						.url(
+							baseUrl
+							.newBuilder()
+							.addPathSegments("api/stacks")
+							.build()
+						)
+						.build()
+				)
+				.execute()
+				.body()
+				.byteStream(),
+				new TypeReference<List<StackGetRestV1>>(){}
+			);
+		} catch (IOException e) {
+			throw new UncheckedIOException(e);
+		}
 	}
 
 	public void createStack(StackCreateReqV1 createReqV1){
-		Response res = webTarget
-			.path("/api/stacks")
-			.queryParam("type", 1)
-			.queryParam("method", "string")
-			.queryParam("endpointId", 1)
-			.request(MediaType.APPLICATION_JSON_TYPE)
-			.post(Entity.json(JsonUtils.writeValueAsString(createReqV1)));
-		Validate.isTrue(
-			res.getStatusInfo().toEnum() == Response.Status.OK,
-			res.readEntity(String.class)
-		);
+		Call call = okHttpClient
+			.newCall(
+				new Request.Builder()
+				.url(
+					baseUrl
+						.newBuilder()
+						.addEncodedPathSegments("api/stacks")
+						.setQueryParameter("type", "1")
+						.setQueryParameter("method", "string")
+						.setQueryParameter("endpointId", "1")
+						.build()
+				)
+				.post(RequestBody.create(
+					MediaType.get("application/json"), JsonUtils.writeValueAsString(createReqV1)
+				))
+				.build()
+			);
+		try(Response res = call.execute()){
+			Validate.isTrue(res.isSuccessful(), res.body().string());
+		} catch (IOException e) {
+			throw new UncheckedIOException(e);
+		}
 	}
 
 	public RequestRes updateStack(StackUpdateReqV1 updateReqV1){
-		Response res = webTarget
-			.path("/api/stacks/")
-			.path(String.valueOf(updateReqV1.getId()))
-			.queryParam("endpointId", 1)
-			.request(MediaType.APPLICATION_JSON_TYPE)
-			.put(Entity.json(JsonUtils.writeValueAsString(updateReqV1)));
-		final String body = res.readEntity(String.class);
-		Validate.isTrue(
-			res.getStatusInfo().toEnum() == Response.Status.OK, body
+		Call call = okHttpClient
+		.newCall(
+			new Request.Builder()
+				.url(
+					baseUrl
+					.newBuilder()
+					.addEncodedPathSegments("api/stacks")
+					.addEncodedPathSegment(String.valueOf(updateReqV1.getId()))
+					.setQueryParameter("endpointId", "1")
+					.build()
+				)
+				.put(RequestBody.create(MediaType.get("application/json"), JsonUtils.writeValueAsString(updateReqV1)))
+				.build()
 		);
-		return RequestRes.valueOf(res, body);
+		try (Response res  = call.execute()){
+			Validate.isTrue(res.isSuccessful(), res.body().string());
+			return RequestRes.valueOf(res, res.body().string());
+		} catch (IOException e) {
+			throw new UncheckedIOException(e);
+		}
 	}
 
 	public StackFileGetResV1 findStackContent(long stackId) {
-		return webTarget
-			.path("/api/stacks/")
-			.path(String.valueOf(stackId))
-			.path("/file")
-			.request(MediaType.APPLICATION_JSON_TYPE)
-			.get(StackFileGetResV1.class)
-		;
+		Call call = okHttpClient
+			.newCall(
+				new Request.Builder()
+					.url(
+						baseUrl
+							.newBuilder()
+							.addPathSegments("api/stacks")
+							.addPathSegment(String.valueOf(stackId))
+							.addPathSegment("file")
+							.build()
+					)
+					.get()
+					.build()
+			);
+		try(Response res = call.execute()){
+			Validate.isTrue(res.isSuccessful(), res.body().string());
+			return JsonUtils.readValue(res.body().byteStream(), StackFileGetResV1.class);
+		} catch (IOException e) {
+			throw new UncheckedIOException(e);
+		}
 	}
 }

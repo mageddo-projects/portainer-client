@@ -2,10 +2,10 @@ package com.mageddo.portainer.client.apiclient.vo;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.mageddo.common.jackson.JsonUtils;
+import okhttp3.Response;
 
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import java.io.UncheckedIOException;
+import java.util.Objects;
 
 public class RequestRes {
 
@@ -42,11 +42,11 @@ public class RequestRes {
 	public static RequestRes valueOf(Response response, String body){
 		return new RequestRes()
 			.setMsg(
-				response.getMediaType().equals(MediaType.APPLICATION_JSON_TYPE)
+				Objects.equals("application/json", response.header("Content-Type"))
 					? JsonUtils.readTree(body)
 					: body
 			)
-			.setStatus(response.getStatus())
+			.setStatus(response.code())
 		;
 	}
 }

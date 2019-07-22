@@ -7,6 +7,8 @@ import com.mageddo.portainer.client.vo.DockerStack;
 import com.mageddo.portainer.client.vo.DockerStackDeploy;
 import com.mageddo.portainer.client.vo.StackEnv;
 import com.mageddo.utils.InMemoryRestServer;
+import okhttp3.HttpUrl;
+import okhttp3.OkHttpClient;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -32,7 +34,7 @@ public class PortainerStackServiceTest {
 
 	@Before
 	public void before(){
-		portainerStackService = new PortainerStackService(new PortainerStackApiClient(server.target()));
+		portainerStackService = new PortainerStackService(new PortainerStackApiClient(new OkHttpClient(), HttpUrl.parse(server.getURL())));
 	}
 
 	@Test

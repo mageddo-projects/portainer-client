@@ -2,34 +2,47 @@ package com.mageddo.portainer.client.apiclient;
 
 import com.mageddo.common.jackson.JsonUtils;
 import com.mageddo.portainer.client.apiclient.vo.AuthReqV1;
+import okhttp3.*;
 
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import java.io.InputStream;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 
 public class PortainerAuthApiClient {
 
-	private final WebTarget webTarget;
+	private final OkHttpClient okHttpClient;
+	private final HttpUrl baseUrl;
 
-	public PortainerAuthApiClient(WebTarget webTarget) {
-		this.webTarget = webTarget;
+	public PortainerAuthApiClient(OkHttpClient okHttpClient, HttpUrl baseUrl) {
+		this.okHttpClient = okHttpClient;
+		this.baseUrl = baseUrl;
 	}
 
 	public String doAuth(String username, String password){
-		final Response res = webTarget
-			.path("/api/auth")
-			.request(MediaType.APPLICATION_JSON_TYPE)
-			.post(Entity.json(JsonUtils.writeValueAsString(
-				new AuthReqV1()
-				.setUsername(username)
-				.setPassword(password)
-			)));
-		return JsonUtils
-			.readTree(res.readEntity(InputStream.class))
-			.at("/jwt")
-			.asText()
-		;
+		final Call call = okHttpClient
+		.newCall(
+			new Request.Builder()
+			.url(
+				baseUrl
+				.newBuilder()
+				.addPathSegments("api/auth")
+				.build()
+			)
+			.post(RequestBody.create(
+				MediaType.get("application/json"),
+				JsonUtils.writeValueAsString(new AuthReqV1()
+					.setUsername(username)
+					.setPassword(password))
+			))
+			.build()
+		);
+		try(Response res = call.execute()){
+			return JsonUtils
+				.readTree(res.body().byteStream())
+				.at("/jwt")
+				.asText()
+			;
+		} catch (IOException e) {
+			throw new UncheckedIOException(e);
+		}
 	}
 }

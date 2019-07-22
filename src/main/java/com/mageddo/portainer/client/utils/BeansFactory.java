@@ -1,14 +1,18 @@
 package com.mageddo.portainer.client.utils;
 
-import com.mageddo.common.resteasy.RestEasy;
 import com.mageddo.portainer.client.apiclient.PortainerAuthApiClient;
 import com.mageddo.portainer.client.apiclient.PortainerAuthenticationFilter;
 import com.mageddo.portainer.client.apiclient.PortainerStackApiClient;
 import com.mageddo.portainer.client.service.PortainerStackService;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.impl.client.HttpClientBuilder;
+import okhttp3.ConnectionPool;
+import okhttp3.HttpUrl;
+import okhttp3.OkHttpClient;
 
-import javax.ws.rs.client.Client;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.X509TrustManager;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.X509Certificate;
+import java.util.concurrent.TimeUnit;
 
 public final class BeansFactory {
 
@@ -16,40 +20,48 @@ public final class BeansFactory {
 	}
 
 	public static PortainerStackService newStackService() {
+		HttpUrl baseUrl = HttpUrl.parse(EnvUtils.getPortainerApiUri());
 		return new PortainerStackService(
 			new PortainerStackApiClient(
 				createClient()
-					.register(new PortainerAuthenticationFilter(new PortainerAuthApiClient(
-						createClient().target(EnvUtils.getPortainerApiUri())
-					)))
-					.target(EnvUtils.getPortainerApiUri())
+				.newBuilder()
+				.authenticator(
+						new PortainerAuthenticationFilter(new PortainerAuthApiClient(
+						createClient(), baseUrl
+					))
+				)
+				.build(),
+				baseUrl
 			)
 		);
 	}
 
-	public static Client createClient() {
+	public static OkHttpClient createClient() {
 
-		HttpClientBuilder clientBuilder = HttpClientBuilder
-			.create()
-			.setDefaultRequestConfig(
-				RequestConfig.custom()
-					.setConnectionRequestTimeout(30_000)
-					.setConnectTimeout(5000)
-					.setSocketTimeout(36_000)
-					.setRedirectsEnabled(false)
-					.build()
-			)
-			.setMaxConnTotal(1)
-			.setMaxConnPerRoute(1)
-			;
+		OkHttpClient.Builder clientBuilder = new OkHttpClient.Builder()
+			.connectTimeout(5, TimeUnit.SECONDS)
+			.readTimeout(30, TimeUnit.SECONDS)
+			.callTimeout(36, TimeUnit.SECONDS)
+			.connectionPool(new ConnectionPool(1, 1, TimeUnit.MINUTES))
+		;
 
 		if(EnvUtils.insecureConnection()){
-			clientBuilder
-				.setSSLContext(RestEasy.createFakeSSLContext())
-				.setSSLHostnameVerifier((a,b) -> true)
-			;
+			try {
+				clientBuilder
+					.hostnameVerifier((a, b) -> true)
+					.sslSocketFactory( SSLContext.getDefault().getSocketFactory(), new X509TrustManager() {
+						public void checkClientTrusted(X509Certificate[] arg0, String arg1) {}
+						public void checkServerTrusted(X509Certificate[] arg0, String arg1) {}
+						public X509Certificate[] getAcceptedIssuers() {
+							return new X509Certificate[0];
+						}
+					})
+				;
+			} catch (NoSuchAlgorithmException e) {
+				throw new RuntimeException(e);
+			}
 		}
 
-		return RestEasy.newRestEasyBuilder(clientBuilder).build();
+		return clientBuilder.build();
 	}
 }
