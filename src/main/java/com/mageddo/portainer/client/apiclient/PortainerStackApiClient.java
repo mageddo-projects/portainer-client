@@ -70,7 +70,8 @@ public class PortainerStackApiClient {
 	}
 
 	public RequestRes updateStack(StackUpdateReqV1 updateReqV1){
-		Call call = okHttpClient
+		final String reqBody = JsonUtils.writeValueAsString(updateReqV1);
+		final Call call = okHttpClient
 		.newCall(
 			new Request.Builder()
 				.url(
@@ -81,13 +82,13 @@ public class PortainerStackApiClient {
 					.setQueryParameter("endpointId", "1")
 					.build()
 				)
-				.put(RequestBody.create(MediaType.get("application/json"), JsonUtils.writeValueAsString(updateReqV1)))
+				.put(RequestBody.create(MediaType.get("application/json"), reqBody))
 				.build()
 		);
 		try (Response res  = call.execute()){
-			String body = res.body().string();
-			Validate.isTrue(res.isSuccessful(), body);
-			return RequestRes.valueOf(res, body);
+			String resBody = res.body().string();
+			Validate.isTrue(res.isSuccessful(), String.format("request: %s\n\n response: %s\n", reqBody, resBody));
+			return RequestRes.valueOf(res, resBody);
 		} catch (IOException e) {
 			throw new UncheckedIOException(e);
 		}
