@@ -21,6 +21,11 @@ public final class PortainerClient {
 		return this;
 	}
 
+	public PortainerClient insecureConnection(boolean insecureConnection){
+		EnvUtils.setInsecureConnection(insecureConnection);
+		return this;
+	}
+
 	public PortainerApiClient build() {
 		return new PortainerApiClient();
 	}

@@ -1,6 +1,5 @@
 package com.mageddo.portainer.client.utils;
 
-import com.mageddo.portainer.client.PortainerClient;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
@@ -9,43 +8,41 @@ import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Properties;
+import java.util.*;
 
 public class EnvUtils {
 
 	private static PortainerProp props;
 
 	public static String getPortainerApiUri(){
-		return getConfigProps().asText("portainer.uri", "http://localhost:9000");
+		return configProps().asText("portainer.uri", "http://localhost:9000");
 	}
 
 	public static String getAuthToken() {
-		return getConfigProps().asText("portainer.auth.token");
+		return configProps().asText("portainer.auth.token");
 	}
 
 	public static void setAuthToken(String authToken) {
-		getConfigProps().put("portainer.auth.token", authToken);
+		configProps().put("portainer.auth.token", authToken);
 	}
 
 	public static void setUsername(String username) {
-		getConfigProps().put("portainer.auth.username", username);
+		configProps().put("portainer.auth.username", username);
 	}
 
 	public static String getUsername() {
-		return getConfigProps().asText("portainer.auth.username");
+		return configProps().asText("portainer.auth.username");
 	}
 
 	public static void setPassword(String password) {
-		getConfigProps().put("portainer.auth.password", password);
+		configProps().put("portainer.auth.password", password);
 	}
 
 	public static String getPassword() {
-		return getConfigProps().asText("portainer.auth.password");
+		return configProps().asText("portainer.auth.password");
 	}
 
-	public static PortainerProp getConfigProps(){
+	public static PortainerProp configProps(){
 			if(props != null){
 				return props;
 			}
@@ -57,6 +54,29 @@ public class EnvUtils {
 	}
 
 	private static PortainerProp loadConfigProps(){
+		return mergeWithEnvVars(loadConfigProps0());
+	}
+
+	private static PortainerProp mergeWithEnvVars(PortainerProp props) {
+		System
+			.getenv()
+			.entrySet()
+			.stream()
+			.filter(it -> it.getKey().startsWith("PTN"))
+			.forEach(env -> props.put(toPropKey(env), env.getValue()));
+		return props;
+	}
+
+	private static String toPropKey(Map.Entry<String, String> env) {
+		return env
+			.getKey()
+			.replaceFirst("PTN", "PORTAINER")
+			.replaceAll("_", ".")
+			.toLowerCase()
+		;
+	}
+
+	private static PortainerProp loadConfigProps0(){
 		final PortainerProp resourceProps = loadConfigPropsFromResources();
 		final PortainerProp pathProps = loadConfigPropsFromPath();
 		if(pathProps == null){
@@ -121,7 +141,7 @@ public class EnvUtils {
 	}
 
 	public static boolean insecureConnection() {
-		return getConfigProps().asBoolean("portainer.uri.insecure", false);
+		return configProps().asBoolean("portainer.uri.insecure", false);
 	}
 
 	public static void setupEnv() {
@@ -129,6 +149,10 @@ public class EnvUtils {
 	}
 
 	public static void setPortainerApiUri(String serverURI) {
-		getConfigProps().put("portainer.uri", serverURI);
+		configProps().put("portainer.uri", serverURI);
+	}
+
+	public static void setInsecureConnection(boolean insecureConnection) {
+		configProps().put("portainer.uri.insecure", String.valueOf(insecureConnection));
 	}
 }

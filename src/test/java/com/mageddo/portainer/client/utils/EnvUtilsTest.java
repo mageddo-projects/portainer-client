@@ -19,7 +19,7 @@ public class EnvUtilsTest {
 		
 		// act
 		EnvUtils.clearCache();
-		PortainerProp props = EnvUtils.getConfigProps();
+		PortainerProp props = EnvUtils.configProps();
 
 		// assert
 		assertNotNull(props);
@@ -38,7 +38,7 @@ public class EnvUtilsTest {
 		;
 
 		// act
-		final PortainerProp props = EnvUtils.getConfigProps();
+		final PortainerProp props = EnvUtils.configProps();
 
 		// assert
 		assertNotNull(props);
