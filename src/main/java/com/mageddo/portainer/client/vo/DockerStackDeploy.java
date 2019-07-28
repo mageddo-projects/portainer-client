@@ -1,5 +1,8 @@
 package com.mageddo.portainer.client.vo;
 
+import org.apache.commons.lang3.Validate;
+
+import java.util.Collections;
 import java.util.List;
 
 public class DockerStackDeploy {
@@ -8,6 +11,10 @@ public class DockerStackDeploy {
 	private String stackFileContent;
 	private boolean prune;
 	private List<StackEnv> envs;
+
+	public DockerStackDeploy() {
+		this.envs = Collections.emptyList();
+	}
 
 	public String getName() {
 		return name;
@@ -37,7 +44,7 @@ public class DockerStackDeploy {
 	}
 
 	public DockerStackDeploy setEnvs(List<StackEnv> envs) {
-		this.envs = envs;
+		this.envs = Validate.notNull(envs, "envs can't be empty");
 		return this;
 	}
 
