@@ -1,5 +1,6 @@
 package com.mageddo.portainer.client.utils;
 
+import com.mageddo.portainer.client.PortainerClient;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
@@ -125,5 +126,9 @@ public class EnvUtils {
 
 	public static void setupEnv() {
 		// TODO SET ON PROPS FROM ENV VARIABLES
+	}
+
+	public static void setPortainerApiUri(String serverURI) {
+		getConfigProps().put("portainer.uri", serverURI);
 	}
 }

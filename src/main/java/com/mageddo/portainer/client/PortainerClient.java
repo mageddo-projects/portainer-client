@@ -1,11 +1,28 @@
 package com.mageddo.portainer.client;
 
+import com.mageddo.portainer.client.utils.EnvUtils;
+
 public final class PortainerClient {
 
-	public static AuthorizedPortainerClient auth(String username, String password){
-		System.setProperty("portainer.auth.username", username);
-		System.setProperty("portainer.auth.password", password);
-		return new AuthorizedPortainerClient();
+	private PortainerClient() {}
+
+	public static PortainerClient builder() {
+		return new PortainerClient();
+	}
+
+	public PortainerClient auth(String username, String password) {
+		EnvUtils.setUsername(username);
+		EnvUtils.setPassword(password);
+		return this;
+	}
+
+	public PortainerClient portainerApiUri(String serverURI){
+		EnvUtils.setPortainerApiUri(serverURI);
+		return this;
+	}
+
+	public PortainerApiClient build() {
+		return new PortainerApiClient();
 	}
 
 }
