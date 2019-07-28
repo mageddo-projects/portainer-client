@@ -85,8 +85,9 @@ public class PortainerStackApiClient {
 				.build()
 		);
 		try (Response res  = call.execute()){
-			Validate.isTrue(res.isSuccessful(), res.body().string());
-			return RequestRes.valueOf(res, res.body().string());
+			String body = res.body().string();
+			Validate.isTrue(res.isSuccessful(), body);
+			return RequestRes.valueOf(res, body);
 		} catch (IOException e) {
 			throw new UncheckedIOException(e);
 		}
@@ -108,8 +109,9 @@ public class PortainerStackApiClient {
 					.build()
 			);
 		try(Response res = call.execute()){
-			Validate.isTrue(res.isSuccessful(), res.body().string());
-			return JsonUtils.readValue(res.body().byteStream(), StackFileGetResV1.class);
+			String body = res.body().string();
+			Validate.isTrue(res.isSuccessful(), body);
+			return JsonUtils.instance().readValue(body, StackFileGetResV1.class);
 		} catch (IOException e) {
 			throw new UncheckedIOException(e);
 		}

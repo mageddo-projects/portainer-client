@@ -8,9 +8,10 @@ import okhttp3.ConnectionPool;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.X509TrustManager;
+import javax.net.ssl.*;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.concurrent.TimeUnit;
 
@@ -37,7 +38,6 @@ public final class BeansFactory {
 	}
 
 	public static OkHttpClient createClient() {
-
 		OkHttpClient.Builder clientBuilder = new OkHttpClient.Builder()
 			.connectTimeout(5, TimeUnit.SECONDS)
 			.readTimeout(30, TimeUnit.SECONDS)
@@ -45,23 +45,36 @@ public final class BeansFactory {
 			.connectionPool(new ConnectionPool(1, 1, TimeUnit.MINUTES))
 		;
 
-		if(EnvUtils.insecureConnection()){
+		if(EnvUtils.insecureConnection()) {
+			return createByPassSSLOkHttpClient(clientBuilder);
+		} else {
+			return clientBuilder.build();
+		}
+	}
+
+	private static OkHttpClient createByPassSSLOkHttpClient(OkHttpClient.Builder clientBuilder) {
 			try {
-				clientBuilder
-					.hostnameVerifier((a, b) -> true)
-					.sslSocketFactory( SSLContext.getDefault().getSocketFactory(), new X509TrustManager() {
-						public void checkClientTrusted(X509Certificate[] arg0, String arg1) {}
-						public void checkServerTrusted(X509Certificate[] arg0, String arg1) {}
-						public X509Certificate[] getAcceptedIssuers() {
-							return new X509Certificate[0];
-						}
-					})
+				final X509TrustManager trustAllCerts = new X509TrustManager() {
+					@Override
+					public void checkClientTrusted(X509Certificate[] chain, String authType) {}
+
+					@Override
+					public void checkServerTrusted(X509Certificate[] chain, String authType) {}
+
+					@Override
+					public X509Certificate[] getAcceptedIssuers() { return new X509Certificate[]{}; }
+				};
+
+				final SSLContext sslContext = SSLContext.getInstance("SSL");
+				sslContext.init(null, new TrustManager[]{trustAllCerts}, new SecureRandom());
+
+				return clientBuilder
+				.sslSocketFactory(sslContext.getSocketFactory(), trustAllCerts)
+				.hostnameVerifier((hostname, session) -> true)
+				.build()
 				;
-			} catch (NoSuchAlgorithmException e) {
+			} catch (Exception e) {
 				throw new RuntimeException(e);
 			}
-		}
-
-		return clientBuilder.build();
 	}
 }
