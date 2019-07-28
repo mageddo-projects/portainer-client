@@ -71,6 +71,7 @@ public class PortainerStackService {
 	}
 
 	public void runStack(String stackName, boolean prune, List<StackEnv> envs) {
+		Validate.notNull(envs, "envs can't be null");
 		DockerStack dockerStack = findDockerStack(stackName);
 		Validate.notNull(dockerStack, "stack not found", stackName);
 		createOrUpdateStack(
