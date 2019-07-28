@@ -29,5 +29,4 @@ public final class PortainerClient {
 	public PortainerApiClient build() {
 		return new PortainerApiClient();
 	}
-
 }

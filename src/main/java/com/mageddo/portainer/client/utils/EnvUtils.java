@@ -144,15 +144,12 @@ public class EnvUtils {
 		return configProps().asBoolean("portainer.uri.insecure", false);
 	}
 
-	public static void setupEnv() {
-		// TODO SET ON PROPS FROM ENV VARIABLES
+	public static void setInsecureConnection(boolean insecureConnection) {
+		configProps().put("portainer.uri.insecure", String.valueOf(insecureConnection));
 	}
 
 	public static void setPortainerApiUri(String serverURI) {
 		configProps().put("portainer.uri", serverURI);
 	}
 
-	public static void setInsecureConnection(boolean insecureConnection) {
-		configProps().put("portainer.uri.insecure", String.valueOf(insecureConnection));
-	}
 }
