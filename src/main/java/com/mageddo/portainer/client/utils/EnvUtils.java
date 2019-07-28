@@ -1,5 +1,7 @@
 package com.mageddo.portainer.client.utils;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
@@ -69,10 +71,10 @@ public class EnvUtils {
 	}
 
 	private static String getConfigFileName() {
-		return Optional
-			.ofNullable(System.getenv("PTN_CONFIG_FILE_NAME"))
-			.orElse("portainer-cli.properties")
-		;
+		return StringUtils.firstNonBlank(
+			System.getenv("PTN_CONFIG_FILE_NAME"),
+			"portainer-cli.properties"
+		);
 	}
 
 	private static PortainerProp loadConfigPropsFromPath() {
@@ -88,14 +90,12 @@ public class EnvUtils {
 	}
 
 	private static Path getConfigDir() {
-		return Paths.get(
-			Optional
-			.ofNullable(System.getProperty("PTN_CONFIG_DIR"))
-			.orElse(System.getProperty("user.home") + "/.portainer-cli/")
-		)
-		;
+		return Paths.get(StringUtils.firstNonBlank(
+			System.getenv("PTN_CONFIG_DIR"),
+			System.getProperty("PTN_CONFIG_DIR"),
+			Paths.get(System.getProperty("user.home"), ".portainer-cli/").toString()
+		));
 	}
-
 
 	static PortainerProp loadConfigPropsFromResources() {
 		return Optional
