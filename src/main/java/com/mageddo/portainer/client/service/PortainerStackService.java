@@ -83,49 +83,13 @@ public class PortainerStackService {
 	public void runStackClonningServices(String stackName, boolean prune, List<StackEnv> envs){
 		Validate.notNull(envs, "envs can't be null");
 		DockerStack dockerStack = mustFindStack(stackName);
-		System.out.println(createTempServices(findStackContent(dockerStack.getId())));;
-
-	}
-
-	JsonNode createTempServices(final String composeFileContent) {
-		return createTempServices(composeFileContent, create8DigitsHash());
-	}
-
-	JsonNode createTempServices(final String composeFileContent, final String hash) {
-		try {
-			return createTempServices(getYamlInstance().readTree(composeFileContent), hash);
-		} catch (IOException e) {
-			throw new UnsupportedOperationException(e);
-		}
-	}
-
-	JsonNode createTempServices(JsonNode composeFileNode) {
-		return createTempServices(composeFileNode, create8DigitsHash());
-	}
-
-	JsonNode createTempServices(JsonNode composeFileNode, final String hash) {
-		final ObjectNode services = (ObjectNode) composeFileNode.at("/services");
-		services
-		.fields()
-		.forEachRemaining(it -> {
-			services.remove(it.getKey());
-			services.set(formatServiceName(it.getKey(), hash), it.getValue());
-		});
-		return composeFileNode;
-	}
-
-	private String formatServiceName(String serviceName, String hash) {
-		serviceName = serviceName.replaceAll("(.*)(__\\w*)(.*)", "$1$3");
-		return String.format("%s__%s", serviceName, hash);
-	}
-
-	private String create8DigitsHash() {
-		return UUID
-			.randomUUID()
-			.toString()
-			.replaceAll("-", "")
-			.substring(0, 8)
-		;
+		createOrUpdateStack(
+			new DockerStackDeploy()
+				.setName(stackName)
+				.setStackFileContent(String.valueOf(createTempServices(findStackContent(dockerStack.getId()))))
+				.setPrune(prune)
+				.setEnvs(StackEnv.merge(dockerStack.getEnvs(), envs))
+		);
 	}
 
 	public void runStack(String stackName, boolean prune, List<StackEnv> envs) {
@@ -151,5 +115,47 @@ public class PortainerStackService {
 			.findStackContent(stackId)
 			.getStackFileContent()
 		;
+	}
+
+
+	JsonNode createTempServices(final String composeFileContent) {
+		return createTempServices(composeFileContent, create8DigitsHash());
+	}
+
+	JsonNode createTempServices(final String composeFileContent, final String hash) {
+		try {
+			return createTempServices(getYamlInstance().readTree(composeFileContent), hash);
+		} catch (IOException e) {
+			throw new UnsupportedOperationException(e);
+		}
+	}
+
+	JsonNode createTempServices(JsonNode composeFileNode) {
+		return createTempServices(composeFileNode, create8DigitsHash());
+	}
+
+	JsonNode createTempServices(JsonNode composeFileNode, final String hash) {
+		final ObjectNode services = (ObjectNode) composeFileNode.at("/services");
+		services
+			.fields()
+			.forEachRemaining(it -> {
+				services.remove(it.getKey());
+				services.set(formatServiceName(it.getKey(), hash), it.getValue());
+			});
+		return composeFileNode;
+	}
+
+	private String formatServiceName(String serviceName, String hash) {
+		serviceName = serviceName.replaceAll("(.*)(__\\w*)(.*)", "$1$3");
+		return String.format("%s__%s", serviceName, hash);
+	}
+
+	private String create8DigitsHash() {
+		return UUID
+			.randomUUID()
+			.toString()
+			.replaceAll("-", "")
+			.substring(0, 8)
+			;
 	}
 }
