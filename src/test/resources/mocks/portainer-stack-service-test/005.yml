@@ -1,0 +1,19 @@
+---
+version: "3"
+services:
+  vncserver__da4c5da0:
+    image: "alpine:latest"
+    command: "echo \"Hello World\""
+    environment:
+    - "VERSION=1.0"
+    deploy:
+      resources:
+        limits:
+          memory: "300m"
+    volumes:
+    - "/tmp:/tmp"
+    networks:
+    - "mageddo"
+networks:
+  mageddo:
+    external: true

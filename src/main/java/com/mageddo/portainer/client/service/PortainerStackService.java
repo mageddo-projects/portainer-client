@@ -1,5 +1,7 @@
 package com.mageddo.portainer.client.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mageddo.portainer.client.apiclient.PortainerStackApiClient;
 import com.mageddo.portainer.client.apiclient.vo.RequestRes;
 import com.mageddo.portainer.client.apiclient.vo.StackCreateReqV1;
@@ -19,6 +21,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
+
+import static com.mageddo.portainer.client.utils.YamlUtils.getYamlInstance;
 
 public class PortainerStackService {
 
@@ -70,10 +75,56 @@ public class PortainerStackService {
 		}
 	}
 
+	/**
+	 * Run stack cloning existent services this way you can run the same service multiple times in parallel,
+	 * useful when you are using the stack as a task runner
+	 */
+	public void runStackClonningServices(String stackName, boolean prune, List<StackEnv> envs){
+		Validate.notNull(envs, "envs can't be null");
+		DockerStack dockerStack = mustFindStack(stackName);
+		System.out.println(createTempServices(findStackContent(dockerStack.getId())));;
+
+	}
+
+	JsonNode createTempServices(final String composeFileContent) {
+		return createTempServices(composeFileContent, create8DigitsHash());
+	}
+
+	JsonNode createTempServices(final String composeFileContent, final String hash) {
+		try {
+			return createTempServices(getYamlInstance().readTree(composeFileContent), hash);
+		} catch (IOException e) {
+			throw new UnsupportedOperationException(e);
+		}
+	}
+
+	JsonNode createTempServices(JsonNode composeFileNode) {
+		return createTempServices(composeFileNode, create8DigitsHash());
+	}
+
+	JsonNode createTempServices(JsonNode composeFileNode, final String hash) {
+		final ObjectNode services = (ObjectNode) composeFileNode.at("/services");
+		services
+		.fields()
+		.forEachRemaining(it -> {
+			services.remove(it.getKey());
+			services.set(String.format("%s__%s", it.getKey(), hash), it.getValue());
+		});
+		return composeFileNode;
+	}
+
+	private String create8DigitsHash() {
+		return UUID
+			.randomUUID()
+			.toString()
+			.replaceAll("-", "")
+			.substring(0, 8)
+		;
+	}
+
 	public void runStack(String stackName, boolean prune, List<StackEnv> envs) {
 		Validate.notNull(envs, "envs can't be null");
-		DockerStack dockerStack = findDockerStack(stackName);
-		Validate.notNull(dockerStack, "stack not found", stackName);
+		DockerStack dockerStack = mustFindStack(stackName);
 		createOrUpdateStack(
 			new DockerStackDeploy()
 			.setName(stackName)
@@ -81,6 +132,12 @@ public class PortainerStackService {
 			.setPrune(prune)
 			.setEnvs(StackEnv.merge(dockerStack.getEnvs(), envs))
 		);
+	}
+
+	private DockerStack mustFindStack(String stackName) {
+		DockerStack dockerStack = findDockerStack(stackName);
+		Validate.notNull(dockerStack, "stack not found", stackName);
+		return dockerStack;
 	}
 
 	private String findStackContent(long stackId) {

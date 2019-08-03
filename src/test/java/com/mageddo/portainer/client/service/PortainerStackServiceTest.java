@@ -3,6 +3,7 @@ package com.mageddo.portainer.client.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.mageddo.common.jackson.JsonUtils;
 import com.mageddo.portainer.client.apiclient.PortainerStackApiClient;
+import com.mageddo.portainer.client.utils.YamlUtils;
 import com.mageddo.portainer.client.vo.DockerStack;
 import com.mageddo.portainer.client.vo.DockerStackDeploy;
 import com.mageddo.portainer.client.vo.StackEnv;
@@ -19,8 +20,7 @@ import spark.Spark;
 import java.util.Arrays;
 
 import static com.mageddo.utils.TestUtils.readAsString;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class PortainerStackServiceTest {
 
@@ -68,9 +68,33 @@ public class PortainerStackServiceTest {
 	}
 
 	@Test
-	public void mustRunStackExistentStack(){
+	public void mustRunExistentStackChangingEnv(){
 
 		// arrange
+		setupStackRunDeps();
+
+		// act
+		portainerStackService.runStack("ls-stack", true, StackEnv.of("VERSION", 2));
+
+	}
+
+	@Test
+	public void mustRenameStackServicesToTempName() throws Exception {
+
+		// arrange
+		final String composeFileContent = readAsString("/mocks/portainer-stack-service-test/004.yml");
+		final String expectedComposeFileContent = readAsString("/mocks/portainer-stack-service-test/005.yml");
+
+		// act
+		JsonNode replacedStack = portainerStackService.createTempServices(composeFileContent, "da4c5da0");
+
+		// assert
+		assertNotNull(replacedStack);
+		assertEquals(expectedComposeFileContent, YamlUtils.getYamlInstance().writeValueAsString(replacedStack));
+
+	}
+
+	private void setupStackRunDeps() {
 		Spark.get("/api/stacks", (req, res) -> {
 			res.type("application/json");
 			return readAsString("/mocks/portainer-stack-service-test/002.json");
@@ -88,11 +112,8 @@ public class PortainerStackServiceTest {
 			assertTrue(req.body(), req.body().contains("\"name\":\"VERSION\",\"value\":\"2\""));
 			return "";
 		});
-
-		// act
-		portainerStackService.runStack("ls-stack", true, StackEnv.of("VERSION", 2));
-
 	}
+
 
 
 	void findStacksRoute() {
