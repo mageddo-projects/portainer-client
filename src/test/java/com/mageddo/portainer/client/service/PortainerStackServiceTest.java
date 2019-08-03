@@ -11,9 +11,8 @@ import com.mageddo.utils.InMemoryRestServer;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import org.apache.commons.lang3.Validate;
-import org.junit.Assert;
 import org.junit.Before;
-import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
 import spark.Spark;
 
@@ -24,8 +23,8 @@ import static org.junit.Assert.*;
 
 public class PortainerStackServiceTest {
 
-	@ClassRule
-	public static final InMemoryRestServer server = new InMemoryRestServer();
+	@Rule
+	public final InMemoryRestServer server = new InMemoryRestServer();
 
 	private PortainerStackService portainerStackService;
 

@@ -33,6 +33,7 @@ public class InMemoryRestServer extends ExternalResource {
 		port = findFreePort();
 		Spark.port(port);
 		Spark.init();
+		Spark.awaitInitialization();
 	}
 
 	public String getURL() {
