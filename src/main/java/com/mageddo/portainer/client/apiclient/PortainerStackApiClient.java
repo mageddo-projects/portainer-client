@@ -22,23 +22,21 @@ public class PortainerStackApiClient {
 
 	public List<StackGetRestV1> findStacks(){
 		try {
-			return JsonUtils.instance().readValue(
-				okHttpClient
+			final Response call = okHttpClient
 				.newCall(
 					new Request.Builder()
 						.url(
 							baseUrl
-							.newBuilder()
-							.addPathSegments("api/stacks")
-							.build()
+								.newBuilder()
+								.addPathSegments("api/stacks")
+								.build()
 						)
 						.build()
 				)
-				.execute()
-				.body()
-				.byteStream(),
-				new TypeReference<List<StackGetRestV1>>(){}
-			);
+				.execute();
+			final String resBody = call.body().string();
+			Validate.isTrue(call.isSuccessful(), resBody);
+			return JsonUtils.instance().readValue(resBody, new TypeReference<List<StackGetRestV1>>(){});
 		} catch (IOException e) {
 			throw new UncheckedIOException(e);
 		}

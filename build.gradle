@@ -27,12 +27,13 @@ dependencies {
 	compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.26'
 	compile ("com.mageddo:graal-reflection-configuration:2.0.0")
 	compile group: 'com.squareup.okhttp3', name: 'okhttp', version: '3.14.2'
+	compile 'ch.qos.logback:logback-classic:1.2.3'
 
 	compile('com.mageddo:rsl:1.0.0')
 	annotationProcessor('com.mageddo:rsl-compiler:1.0.1')
 	testAnnotationProcessor('com.mageddo:rsl-compiler:1.0.1')
 
-	testCompile group: 'org.jboss.resteasy', name: 'resteasy-undertow', version: '3.6.2.Final'
+	testCompile 'com.sparkjava:spark-core:2.9.0'
 	testCompile "junit:junit:4.12"
 
 }

@@ -12,13 +12,7 @@ import okhttp3.OkHttpClient;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
-
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import spark.Spark;
 
 import java.util.Arrays;
 
@@ -28,7 +22,7 @@ import static org.junit.Assert.assertEquals;
 public class PortainerStackServiceTest {
 
 	@ClassRule
-	public static final InMemoryRestServer server = new InMemoryRestServer(Proxy.class);
+	public static final InMemoryRestServer server = new InMemoryRestServer();
 
 	private PortainerStackService portainerStackService;
 
@@ -39,6 +33,10 @@ public class PortainerStackServiceTest {
 
 	@Test
 	public void mustFindPortainerStack(){
+
+		// arrange
+		findStacksRoute();
+
 		// act
 		DockerStack dockerStack = portainerStackService.findDockerStack("web3");
 
@@ -50,6 +48,8 @@ public class PortainerStackServiceTest {
 	public void mustSendEnvsToTheServer(){
 
 		// arrange
+		findStacksRoute();
+		createStacksRoute();
 
 		// act
 		portainerStackService.createOrUpdateStack(
@@ -64,27 +64,26 @@ public class PortainerStackServiceTest {
 
 	}
 
-	@Path("/")
-	public static class Proxy {
 
-		@Path("/api/stacks")
-		@GET
-		public Response stacks() throws Exception {
-			return Response.ok(readAsString("/mocks/portainer-stack-service-test/001.json")).build();
-		}
+	void findStacksRoute() {
+		Spark.get("/api/stacks", (req, res) -> {
+			res.type("application/json");
+			return readAsString("/mocks/portainer-stack-service-test/001.json");
+		});
+	}
 
-		@Path("/api/stacks")
-		@POST
-		@Consumes(MediaType.APPLICATION_JSON)
-		public Response createStack(String json) throws Exception {
-			JsonNode jsonNode = JsonUtils.readTree(json);
+	void createStacksRoute() {
+		Spark.post("/api/stacks", "application/json", (req, res) -> {
+			res.type("application/json");
+			final JsonNode jsonNode = JsonUtils.readTree(req.body());
 			if(jsonNode.at("/Name").asText().equals("my-stack-with-envs")){
 				assertEquals("ka", jsonNode.at("/Env/0/name").asText());
 				assertEquals("a", jsonNode.at("/Env/0/value").asText());
-				return Response.ok().build();
+				return "";
 			}
-			return Response.serverError().build();
-		}
+			res.status(500);
+			return null;
+		});
 	}
 
 }
