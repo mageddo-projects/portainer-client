@@ -94,6 +94,22 @@ public class PortainerStackServiceTest {
 
 	}
 
+	@Test
+	public void mustReplaceHashWhenStackAlreadyHaveIt() throws Exception {
+
+		// arrange
+		final String composeFileContent = readAsString("/mocks/portainer-stack-service-test/005.yml");
+		final String expectedComposeFileContent = readAsString("/mocks/portainer-stack-service-test/006.yml");
+
+		// act
+		JsonNode replacedStack = portainerStackService.createTempServices(composeFileContent, "470bc81f");
+
+		// assert
+		assertNotNull(replacedStack);
+		assertEquals(expectedComposeFileContent, YamlUtils.getYamlInstance().writeValueAsString(replacedStack));
+
+	}
+
 	private void setupStackRunDeps() {
 		Spark.get("/api/stacks", (req, res) -> {
 			res.type("application/json");

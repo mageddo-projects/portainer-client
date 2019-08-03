@@ -10,6 +10,7 @@ import com.mageddo.portainer.client.vo.DockerStack;
 import com.mageddo.portainer.client.vo.DockerStackDeploy;
 import com.mageddo.portainer.client.vo.StackEnv;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -108,9 +109,14 @@ public class PortainerStackService {
 		.fields()
 		.forEachRemaining(it -> {
 			services.remove(it.getKey());
-			services.set(String.format("%s__%s", it.getKey(), hash), it.getValue());
+			services.set(formatServiceName(it.getKey(), hash), it.getValue());
 		});
 		return composeFileNode;
+	}
+
+	private String formatServiceName(String serviceName, String hash) {
+		serviceName = serviceName.replaceAll("(.*)(__\\w*)(.*)", "$1$3");
+		return String.format("%s__%s", serviceName, hash);
 	}
 
 	private String create8DigitsHash() {
