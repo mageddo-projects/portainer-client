@@ -73,8 +73,32 @@ public class PortainerStackServiceTest {
 		// arrange
 		setupStackRunDeps();
 
+		Spark.put("/api/stacks/:stackId", "application/json", (req, res) -> {
+			res.type("application/json");
+			assertEquals("123", req.params("stackId"));
+			assertTrue(req.body(), req.body().contains("\"name\":\"VERSION\",\"value\":\"2\""));
+			return "";
+		});
+
 		// act
 		portainerStackService.runStack("ls-stack", true, StackEnv.of("VERSION", 2));
+
+	}
+
+	@Test
+	public void mustRunExistentStackClonningServices(){
+
+		// arrange
+		setupStackRunDeps();
+		Spark.put("/api/stacks/:stackId", "application/json", (req, res) -> {
+			res.type("application/json");
+			assertEquals("123", req.params("stackId"));
+			assertTrue(req.body(), req.body().contains("cmd__"));
+			return "";
+		});
+
+		// act
+		portainerStackService.runStackClonningServices("ls-stack", false, StackEnv.of("VERSION", 2));
 
 	}
 
@@ -122,12 +146,6 @@ public class PortainerStackServiceTest {
 			return readAsString("/mocks/portainer-stack-service-test/003.json");
 		});
 
-		Spark.put("/api/stacks/:stackId", "application/json", (req, res) -> {
-			res.type("application/json");
-			assertEquals("123", req.params("stackId"));
-			assertTrue(req.body(), req.body().contains("\"name\":\"VERSION\",\"value\":\"2\""));
-			return "";
-		});
 	}
 
 
