@@ -1,6 +1,7 @@
 package com.mageddo.portainer.client.vo;
 
 import com.mageddo.portainer.client.apiclient.vo.StackEnvReqV1;
+import org.apache.commons.lang3.Validate;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +21,15 @@ public class StackEnv {
 	public StackEnv(String name, String value) {
 		this.name = name;
 		this.value = value;
+	}
+
+	public static List<StackEnv> of(Object ... pairs){
+		Validate.isTrue(pairs.length % 2 == 0, "quantity must be even");
+		final List<StackEnv> envs = new ArrayList<>();
+		for (int i = 0; i < pairs.length; i += 2) {
+			envs.add(new StackEnv(String.valueOf(pairs[i]), String.valueOf(pairs[i + 1])));
+		}
+		return envs;
 	}
 
 	public static List<StackEnv> valueOf(List<StackEnvReqV1> envs) {

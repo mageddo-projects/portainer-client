@@ -1,0 +1,21 @@
+[
+	{
+		"Id": 123,
+		"Name": "ls-stack",
+		"Type": 1,
+		"EndpointId": 1,
+		"SwarmId": "jpofkc0i9uo9wtx1zesuk649w",
+		"EntryPoint": "docker-compose.yml",
+		"Env": [],
+		"ProjectPath": "/data/compose/1",
+		"ResourceControl": {
+			"Id": 0,
+			"ResourceId": "",
+			"SubResourceIds": null,
+			"Type": 0,
+			"UserAccesses": null,
+			"TeamAccesses": null,
+			"Public": false
+		}
+	}
+]

@@ -9,6 +9,8 @@ import com.mageddo.portainer.client.vo.StackEnv;
 import com.mageddo.utils.InMemoryRestServer;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
+import org.apache.commons.lang3.Validate;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -18,6 +20,7 @@ import java.util.Arrays;
 
 import static com.mageddo.utils.TestUtils.readAsString;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class PortainerStackServiceTest {
 
@@ -61,6 +64,33 @@ public class PortainerStackServiceTest {
 		);
 
 		// assert
+
+	}
+
+	@Test
+	public void mustRunStackExistentStack(){
+
+		// arrange
+		Spark.get("/api/stacks", (req, res) -> {
+			res.type("application/json");
+			return readAsString("/mocks/portainer-stack-service-test/002.json");
+		});
+
+		Spark.get("/api/stacks/:stackId/file", (req, res) -> {
+			res.type("application/json");
+			Validate.isTrue("123".equals(req.params("stackId")));
+			return readAsString("/mocks/portainer-stack-service-test/003.json");
+		});
+
+		Spark.put("/api/stacks/:stackId", "application/json", (req, res) -> {
+			res.type("application/json");
+			assertEquals("123", req.params("stackId"));
+			assertTrue(req.body(), req.body().contains("\"name\":\"VERSION\",\"value\":\"2\""));
+			return "";
+		});
+
+		// act
+		portainerStackService.runStack("ls-stack", true, StackEnv.of("VERSION", 2));
 
 	}
 

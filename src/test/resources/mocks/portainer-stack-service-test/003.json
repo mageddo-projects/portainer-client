@@ -1,0 +1,3 @@
+{
+	"StackFileContent": "version: '3'\nservices:\n  cmd: ls -lha\n    image: alpine\n"
+}
