@@ -8,6 +8,8 @@ plugins {
 	id "maven"
 }
 
+apply from: 'nexus.gradle'
+
 repositories {
 	mavenLocal()
 	mavenCentral()
