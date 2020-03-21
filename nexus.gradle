@@ -35,7 +35,15 @@ uploadArchives {
 				name 'Portainer Client'
 				packaging 'jar'
 				description 'Rest Client for Portainer'
+
 				url 'https://github.com/mageddo-projects/portainer-client'
+
+				scm {
+					connection = 'https://github.com/mageddo-projects/portainer-client'
+					developerConnection = 'https://github.com/mageddo-projects/portainer-client'
+					url = 'https://github.com/mageddo-projects/portainer-client'
+				}
+
 				licenses {
 					license {
 						name 'The Apache License, Version 2.0'
