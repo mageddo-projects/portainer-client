@@ -21,6 +21,11 @@ targetCompatibility = JavaVersion.VERSION_1_8
 
 dependencies {
 
+	annotationProcessor("org.projectlombok:lombok:1.18.10")
+	annotationProcessor("com.mageddo.lombok:lombok-ext:2.3.4")
+	compileOnly("org.projectlombok:lombok:1.18.10")
+	compile("com.mageddo.lombok:lombok-ext:2.3.4")
+
 	compile group: 'com.mageddo', name: 'commons', version: '1.6.0'
 	compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: jacksonVersion
 	compile group: 'com.fasterxml.jackson.dataformat', name: 'jackson-dataformat-yaml', version: jacksonVersion
@@ -28,13 +33,8 @@ dependencies {
 	compile group: 'commons-io', name: 'commons-io', version: '2.6'
 	compile group: 'com.auth0', name: 'java-jwt', version: '3.8.1'
 	compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.26'
-	compile ("com.mageddo:graal-reflection-configuration:2.0.0")
 	compile group: 'com.squareup.okhttp3', name: 'okhttp', version: '3.14.2'
 	compile 'ch.qos.logback:logback-classic:1.2.3'
-
-	compile('com.mageddo:rsl:1.0.0')
-	annotationProcessor('com.mageddo:rsl-compiler:1.0.1')
-	testAnnotationProcessor('com.mageddo:rsl-compiler:1.0.1')
 
 	testCompile 'com.sparkjava:spark-core:2.9.0'
 	testCompile "junit:junit:4.12"
